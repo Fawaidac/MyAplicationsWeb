@@ -34,4 +34,8 @@ class master_kks extends Model
     {
         return 'string';
     }
+    public function masyarakatkks()
+    {
+        return $this->hasOne(master_masyarakat::class, 'id', 'id');
+    }
 }

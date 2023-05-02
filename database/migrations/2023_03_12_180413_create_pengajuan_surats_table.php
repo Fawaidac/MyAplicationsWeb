@@ -15,16 +15,14 @@ class CreatePengajuanSuratsTable extends Migration
     public function up()
     {
         Schema::create('pengajuan_surats', function (Blueprint $table) {
-            $table->integerIncrements('id_pengajuan');
             $table->uuid('uuid');
             $table->string('status', 20)->nullable()->default('text');
             $table->text('keterangan')->nullable()->default('text');
             $table->dateTime('created_at', $precision = 0);
-            // $table->bigInteger('id')->unsigned();
             $table->uuid('id');
             $table->Foreign('id')->references('id')->on('master_akuns');
             $table->smallInteger('id_surat');
-            $table->foreign('id_surat')->references('id_surat')->on('master_surats')->onDelete('cascade');
+            $table->Foreign('id_surat')->references('id_surat')->on('master_surats');
 
         });
     }

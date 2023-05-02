@@ -5,12 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
 
 class master_akun extends Model
 {
+    use HasApiTokens;
     protected $table = 'master_akuns';
     protected $fillable = [
-         'id_akun', 'password', 'no_hp', 'role', 'created_at', 'updated_at', 'id_masyarakat'
+        'id', 'password', 'no_hp', 'role', 'id_masyarakat'
     ];
 
     protected static function boot()
@@ -42,4 +44,13 @@ class master_akun extends Model
     {
         return 'string';
     }
+    public function masyarakat()
+    {
+        return $this->belongsTo(master_masyarakat::class, 'id_masyarakat', 'id_masyarakat');
+    }
+    public function pengajuan_surats()
+{
+    return $this->hasMany(pengajuan_surat::class, 'akun_id', 'id');
+}
+
 }

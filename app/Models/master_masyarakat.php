@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 class master_masyarakat extends Model
 {
     use HasFactory;
+    protected $keyType = 'uuid';
     protected $table = 'master_masyarakats';
     protected $fillable = ['id_masyarakat', 'nik', 'nama_lengkap', 'jenis_kelamin', 'tempat_lahir',
     'tgl_lahir', 'agama', 'pendidikan', 'pekerjaan', 'golongan_darah', 'status_perkawinan', 'tgl_perkawinan',
@@ -45,5 +46,14 @@ class master_masyarakat extends Model
     public function getKeyType()
     {
         return 'string';
+    }
+    public function akun()
+    {
+        return $this->hasOne(master_akun::class, 'id_masyarakat', 'id_masyarakat');
+    }
+
+    public function kks()
+    {
+        return $this->belongsTo(master_kks::class, 'id', 'id');
     }
 }
