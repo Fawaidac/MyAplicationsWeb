@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\master_masyarakat;
 use App\Models\pengajuan_surat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -11,14 +12,13 @@ class PengajuanController extends Controller
 {
     public function pengajuan(Request $request){
     $request->validate([
-        'id' =>'required',
         'status' => 'required',
         'keterangan' => 'required',
         'id_surat' => 'required',
     ]);
 
     $existingSurat = pengajuan_surat::where('id_surat', $request->id_surat)
-                                    ->where('id', $request->id)
+                                    ->where('id', $request->user()->id)
                                     ->first();  
 
     if (!$existingSurat) {
@@ -27,7 +27,7 @@ class PengajuanController extends Controller
             'status' => 'Diajukan',
             'keterangan' => $request->keterangan,
             'id_surat' => $request->id_surat,
-            'id' => $request->id,
+            'id' => $request->user()->id,
         ]);
 
         return response()->json([
@@ -36,7 +36,7 @@ class PengajuanController extends Controller
         ], 200);
     } else {
         $cek = pengajuan_surat::where('id_surat', $request->id_surat)
-                                ->where('id', Auth::id())
+                                ->where('id', $request->user()->id)
                                 ->where('status', '<>', 'Selesai')
                                 ->exists();
 
@@ -50,7 +50,7 @@ class PengajuanController extends Controller
                 'status' => $request->status,
                 'keterangan' => 'Diajukan',
                 'id_surat' => $request->id_surat,
-                'id' => Auth::id(),
+                'id' => $request->user()->id,
             ]);
 
             return response()->json([
@@ -98,6 +98,25 @@ class PengajuanController extends Controller
         return response()->json([
             'message' => 'success',
             'data' => $suratMasuk
+        ], 200);
+    }
+
+    public function statussurat(Request $request){
+        $no_kk = $request->input('no_kk');
+        $status = $request->input('status');
+        $statussurat = pengajuan_surat::select('pengajuan_surats.*','master_akuns.*', 'master_masyarakat.*')
+        ->join('master_akuns','pengajuan_surats.id', '=', 'master_akuns.id')
+        ->join('master_masyarakats','master_akuns.id_masyarakat', '=', 'master_masyarakats.id_masyarakats')
+        ->where('pengajuan_surats.status', $status)
+        ->whereHas('akun.masyarakat', function($query) use ($no_kk){
+            $query->where('no_kk', $no_kk);
+        })
+        ->with('surat')
+        ->get();
+
+        return response()->json([
+            'message' => 'success',
+            'data' => $statussurat
         ], 200);
     }
 
