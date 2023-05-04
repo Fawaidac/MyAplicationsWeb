@@ -54,6 +54,6 @@ class master_masyarakat extends Model
 
     public function kks()
     {
-        return $this->belongsTo(master_kks::class, 'id', 'id');
+        return $this->hasOne(master_kks::class, 'id', 'id');
     }
 }

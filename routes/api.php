@@ -22,14 +22,17 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::post('auth/register', [AuthController::class, 'register']);
-Route::post('keluarga', [AuthController::class, 'keluarga']);
+// Route::post('keluarga', [AuthController::class, 'keluarga']);
 Route::post('auth/login', [AuthController::class, 'login']);
 Route::get('berita', [BeritaController::class, 'berita']);
 Route::get('surat', [SuratController::class, 'surat']);
 Route::post('suratmasuk', [PengajuanController::class, 'suratmasuk']);
 Route::post('rekap', [PengajuanController::class, 'rekap']);
+Route::post('statussurat', [PengajuanController::class, 'statussurat']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('auth/me', [AuthController::class, 'me']);
     Route::post('auth/logout', [AuthController::class, 'logout']);
+    Route::get('keluarga', [AuthController::class, 'keluarga']);
+    Route::post('pengajuan', [PengajuanController::class, 'pengajuan']);
 });

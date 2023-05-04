@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\master_akun;
+use App\Models\master_kks;
 use App\Models\master_masyarakat;
 use Facade\FlareClient\Http\Response;
 use Illuminate\Http\Request;
@@ -95,22 +96,19 @@ public function logout(){
 
     return response()->json($response, 200);
 }
-public function keluarga(Request $request){
-    $no_kk = $request->input('no_kk');
-    $keluarga =  master_masyarakat::select()
-                ->whereHas('kks', function($q) use ($no_kk) {
-                    $q->where('no_kk', $no_kk);
-                })->get();
+public function keluarga(Request $request)
+{
+    $user = $request->user();
+    $id_masyarakat = $user->id_masyarakat;
+ 
+    // Ambil nomor kartu keluarga dari user
+    $no_kk = master_kks::whereHas('masyarakat', function ($query) use ($id_masyarakat) {
+            $query->where('id_masyarakat', $id_masyarakat);
+        })->value('no_kk');
 
-    if (!$keluarga) {
-        return response()->json([
-            'success' => false,
-            'message' => 'No.KK tidak ditemukan'
-        ], 404);
-    }
-    return response()->json([
-        'success' => true,
-        'data' => $keluarga
-    ], 200);
+    // Ambil data keluarga dari nomor kartu keluarga
+    $keluarga = master_kks::with('masyarakat')->where('no_kk', $no_kk)->first();
+
+    return response()->json($keluarga);
 }
 }
