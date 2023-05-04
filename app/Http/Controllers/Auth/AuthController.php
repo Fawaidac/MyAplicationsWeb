@@ -83,7 +83,7 @@ public function login(Request $request) {
 
     $response = [
         'message' => 'success',
-        'user' => $user->load(['masyarakat', 'masyarakat.kks'])
+        'data' => $user->load(['masyarakat', 'masyarakat.kks'])
     ];
 
     return response()->json($response, 200);
@@ -108,7 +108,11 @@ public function keluarga(Request $request)
 
     // Ambil data keluarga dari nomor kartu keluarga
     $keluarga = master_kks::with('masyarakat')->where('no_kk', $no_kk)->first();
-
-    return response()->json($keluarga);
+    
+    $response = [
+        'message' => 'success',
+        'data' => $keluarga
+    ];
+    return response()->json($response);
 }
 }
