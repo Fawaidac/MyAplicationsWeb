@@ -48,9 +48,5 @@ class master_akun extends Model
     {
         return $this->belongsTo(master_masyarakat::class, 'id_masyarakat', 'id_masyarakat');
     }
-    public function pengajuan_surats()
-{
-    return $this->hasMany(pengajuan_surat::class, 'akun_id', 'id');
-}
 
 }

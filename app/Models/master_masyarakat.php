@@ -56,4 +56,8 @@ class master_masyarakat extends Model
     {
         return $this->hasOne(master_kks::class, 'id', 'id');
     }
+    public function pengajuan_surats()
+    {
+    return $this->hasMany(pengajuan_surat::class, 'id_masyarakat', 'id_masyarakat');
+    }
 }

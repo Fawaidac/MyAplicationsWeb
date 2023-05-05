@@ -100,7 +100,7 @@ public function keluarga(Request $request)
 {
     $user = $request->user();
     $id_masyarakat = $user->id_masyarakat;
- 
+
     // Ambil nomor kartu keluarga dari user
     $no_kk = master_kks::whereHas('masyarakat', function ($query) use ($id_masyarakat) {
             $query->where('id_masyarakat', $id_masyarakat);

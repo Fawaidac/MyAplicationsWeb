@@ -9,15 +9,13 @@ class pengajuan_surat extends Model
 {
     use HasFactory;
     protected $table = 'pengajuan_surats';
-    protected $fillable = ['*'];    
+    protected $fillable = ['id_masyarakat', 'id_surat', 'keterangan', 'created_at','uuid', 'status'];    
+    public $timestamps = false;
+
 
 public function akun()
 {
-    return $this->belongsTo(master_akun::class, 'id', 'id')->withDefault(function () {
-        $model = new master_akun();
-        $model->id = 'default_uuid'; // ID default yang digunakan jika tidak ditemukan di tabel master_akuns
-        return $model;
-    });
+    return $this->belongsTo(master_masyarakat::class, 'id_masyarakat', 'id_masyarakat');
 }
 
 public function surat()

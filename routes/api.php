@@ -29,10 +29,13 @@ Route::get('surat', [SuratController::class, 'surat']);
 Route::post('suratmasuk', [PengajuanController::class, 'suratmasuk']);
 Route::post('rekap', [PengajuanController::class, 'rekap']);
 Route::post('statussurat', [PengajuanController::class, 'statussurat']);
+Route::post('pengajuan', [PengajuanController::class, 'pengajuan']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('auth/me', [AuthController::class, 'me']);
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('keluarga', [AuthController::class, 'keluarga']);
-    Route::post('pengajuan', [PengajuanController::class, 'pengajuan']);
+    Route::get('statusdiajukan', [PengajuanController::class, 'statusdiajukan']);
+    Route::get('statusproses', [PengajuanController::class, 'statusproses']);
+    Route::get('statusselesai', [PengajuanController::class, 'statusselesai']);
 });

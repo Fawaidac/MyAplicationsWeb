@@ -2,23 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\master_kks;
 use App\Models\master_masyarakat;
 use App\Models\pengajuan_surat;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PengajuanController extends Controller
 {
     public function pengajuan(Request $request){
+    $now = Carbon::now();    
     $request->validate([
-        'status' => 'required',
+        'nik' => 'required',
         'keterangan' => 'required',
         'id_surat' => 'required',
     ]);
+    $masyarakat = master_masyarakat::where('nik', $request->nik)->first();
+
+    if (!$masyarakat) {
+        return response()->json([
+            'message' => 'Nik tidak ditemukan',
+        ], 400);
+    }
 
     $existingSurat = pengajuan_surat::where('id_surat', $request->id_surat)
-                                    ->where('id', $request->user()->id)
+                                    ->where('id_masyarakat', $masyarakat->id_masyarakat)
                                     ->first();  
 
     if (!$existingSurat) {
@@ -27,7 +38,8 @@ class PengajuanController extends Controller
             'status' => 'Diajukan',
             'keterangan' => $request->keterangan,
             'id_surat' => $request->id_surat,
-            'id' => $request->user()->id,
+            'created_at' => $now,
+            'id_masyarakat' => $masyarakat->id_masyarakat,
         ]);
 
         return response()->json([
@@ -36,7 +48,7 @@ class PengajuanController extends Controller
         ], 200);
     } else {
         $cek = pengajuan_surat::where('id_surat', $request->id_surat)
-                                ->where('id', $request->user()->id)
+                                ->where('id_masyarakat', $masyarakat->id_masyarakat)
                                 ->where('status', '<>', 'Selesai')
                                 ->exists();
 
@@ -50,7 +62,8 @@ class PengajuanController extends Controller
                 'status' => $request->status,
                 'keterangan' => 'Diajukan',
                 'id_surat' => $request->id_surat,
-                'id' => $request->user()->id,
+                'created_at' => $now,
+                'id_masyarakat' => $masyarakat->id_masyarakat,
             ]);
 
             return response()->json([
@@ -119,5 +132,87 @@ class PengajuanController extends Controller
             'data' => $statussurat
         ], 200);
     }
+
+
+public function statusproses(Request $request){
+    $user = $request->user();
+    $id_masyarakat = $user->id_masyarakat;
+
+        $no_kk = master_kks::whereHas('masyarakat', function ($query) use ($id_masyarakat) {
+            $query->where('id_masyarakat', $id_masyarakat);
+        })->value('no_kk');
+
+    // menggunakan query builder
+    $pengajuan_surats = DB::table('pengajuan_surats')
+                        ->join('master_surats', 'pengajuan_surats.id_surat', '=', 'master_surats.id_surat')
+                        ->join('master_masyarakats', 'pengajuan_surats.id_masyarakat', '=', 'master_masyarakats.id_masyarakat')
+                        ->join('master_kks', 'master_masyarakats.id', '=', 'master_kks.id')
+                        ->where(function($query) use($id_masyarakat, $no_kk) {
+                            $query->where('pengajuan_surats.id_masyarakat', $id_masyarakat)
+                            ->orWhere('master_kks.no_kk', '=', $no_kk);
+                        })
+                        ->whereNotIn('pengajuan_surats.status', ['Selesai', 'Diajukan'])
+                        ->select('pengajuan_surats.*', 'master_masyarakats.*', 'master_surats.*')
+                        ->get();
+
+    return response()->json([
+        'message' => 'success',
+        'data' => $pengajuan_surats
+    ], 200);
+}
+
+
+public function statusdiajukan(Request $request){
+    $user = $request->user();
+    $id_masyarakat = $user->id_masyarakat;
+
+        $no_kk = master_kks::whereHas('masyarakat', function ($query) use ($id_masyarakat) {
+            $query->where('id_masyarakat', $id_masyarakat);
+        })->value('no_kk');
+
+    // menggunakan query builder
+    $pengajuan_surats = DB::table('pengajuan_surats')
+                        ->join('master_surats', 'pengajuan_surats.id_surat', '=', 'master_surats.id_surat')
+                        ->join('master_masyarakats', 'pengajuan_surats.id_masyarakat', '=', 'master_masyarakats.id_masyarakat')
+                        ->join('master_kks', 'master_masyarakats.id', '=', 'master_kks.id')
+                        ->where(function($query) use($id_masyarakat, $no_kk) {
+                            $query->where('pengajuan_surats.id_masyarakat', $id_masyarakat)
+                            ->orWhere('master_kks.no_kk', '=', $no_kk);
+                        })
+                        ->where('pengajuan_surats.status', 'Diajukan')
+                        ->select('pengajuan_surats.*', 'master_masyarakats.*', 'master_surats.*')
+                        ->get();
+
+    return response()->json([
+        'message' => 'success',
+        'data' => $pengajuan_surats
+    ], 200);
+}
+public function statusselesai(Request $request){
+    $user = $request->user();
+    $id_masyarakat = $user->id_masyarakat;
+
+        $no_kk = master_kks::whereHas('masyarakat', function ($query) use ($id_masyarakat) {
+            $query->where('id_masyarakat', $id_masyarakat);
+        })->value('no_kk');
+
+    // menggunakan query builder
+    $pengajuan_surats = DB::table('pengajuan_surats')
+                        ->join('master_surats', 'pengajuan_surats.id_surat', '=', 'master_surats.id_surat')
+                        ->join('master_masyarakats', 'pengajuan_surats.id_masyarakat', '=', 'master_masyarakats.id_masyarakat')
+                        ->join('master_kks', 'master_masyarakats.id', '=', 'master_kks.id')
+                        ->where(function($query) use($id_masyarakat, $no_kk) {
+                            $query->where('pengajuan_surats.id_masyarakat', $id_masyarakat)
+                            ->orWhere('master_kks.no_kk', '=', $no_kk);
+                        })
+                        ->where('pengajuan_surats.status', 'Selesai')
+                        ->select('pengajuan_surats.*', 'master_masyarakats.*', 'master_surats.*')
+                        ->get();
+
+    return response()->json([
+        'message' => 'success',
+        'data' => $pengajuan_surats
+    ], 200);
+}
 
 }
