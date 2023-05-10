@@ -9,7 +9,7 @@ class pengajuan_surat extends Model
 {
     use HasFactory;
     protected $table = 'pengajuan_surats';
-    protected $fillable = ['id_masyarakat', 'id_surat', 'keterangan', 'created_at','uuid', 'status'];    
+    protected $fillable = ['id_masyarakat', 'id_surat', 'keterangan', 'created_at','uuid', 'status', 'file_pdf'];    
     public $timestamps = false;
 
 

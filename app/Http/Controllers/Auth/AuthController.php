@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\master_akun;
 use App\Models\master_kks;
 use App\Models\master_masyarakat;
+use Illuminate\Support\Facades\Validator;
 use Facade\FlareClient\Http\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -115,4 +116,38 @@ public function keluarga(Request $request)
     ];
     return response()->json($response);
 }
+public function editnohp(Request $request){
+    $user = $request->user();
+    $no_hp = $user->no_hp;
+
+    // Validate the incoming request
+    $validator = Validator::make($request->all(), [
+        'no_hp' => [
+            'required',
+            'min:10',
+            'unique:master_akuns,no_hp,'.$user->id,
+            function ($attribute, $value, $fail) use ($no_hp) {
+                if ($value === $no_hp) {
+                    $fail('Nomor HP baru harus berbeda dengan nomor HP lama');
+                }
+            },
+        ],
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => $validator->errors()->first(),
+        ], 400);
+    }
+
+    // Update the user's no_hp
+    $user->update([
+        'no_hp' => $request->no_hp,
+    ]);
+
+    return response()->json([
+        'message' => 'Nomor HP berhasil diperbarui',
+    ], 200);
+}
+
 }

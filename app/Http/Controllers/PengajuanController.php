@@ -35,7 +35,7 @@ class PengajuanController extends Controller
     if (!$existingSurat) {
         $data = pengajuan_surat::create([
             'uuid' => Str::uuid(),
-            'status' => 'Diajukan',
+            'status' => 'Disetujui RT',
             'keterangan' => $request->keterangan,
             'id_surat' => $request->id_surat,
             'created_at' => $now,
@@ -60,7 +60,7 @@ class PengajuanController extends Controller
             $data = pengajuan_surat::create([
                 'uuid' => Str::uuid(),
                 'status' => $request->status,
-                'keterangan' => 'Diajukan',
+                'keterangan' => 'Disetujui RT',
                 'id_surat' => $request->id_surat,
                 'created_at' => $now,
                 'id_masyarakat' => $masyarakat->id_masyarakat,
@@ -72,16 +72,15 @@ class PengajuanController extends Controller
             ], 200);
         }
     }
-}
-    public function suratmasuk(Request $request)
-    {
+    }
+    public function suratmasuk(Request $request){
         $rt = $request->input('rt'); // rt yang dipilih atau ditentukan
         $status = $request->input('status');
-        $suratMasuk = pengajuan_surat::select('pengajuan_surats.*', 'master_akuns.id as id_akun', 'master_masyarakats.*')
-        ->join('master_akuns', 'pengajuan_surats.id', '=', 'master_akuns.id')
-        ->join('master_masyarakats', 'master_akuns.id_masyarakat', '=', 'master_masyarakats.id_masyarakat')
+        $suratMasuk = pengajuan_surat::select('pengajuan_surats.*', 'master_surats.*', 'master_masyarakats.*')
+        ->join('master_masyarakats', 'pengajuan_surats.id_masyarakat', '=', 'master_masyarakats.id_masyarakat')
+        ->join('master_surats', 'pengajuan_surats.id_surat', '=', 'master_surats.id_surat')
         ->where('pengajuan_surats.status', $status)
-        ->whereHas('akun.masyarakat', function ($query) use ($rt) {
+        ->whereHas('akun', function ($query) use ($rt) {
             $query->whereHas('kks', function ($query) use ($rt) {
                 $query->where('rt', $rt);
             });
@@ -94,8 +93,8 @@ class PengajuanController extends Controller
             'data' => $suratMasuk
         ], 200);
     }
-    public function rekap(Request $request)
-    {
+
+    public function rekap(Request $request){
         $rt = $request->input('rt'); // rt yang dipilih atau ditentukan
         $suratMasuk = pengajuan_surat::select('pengajuan_surats.*', 'master_akuns.id as id_akun', 'master_masyarakats.*')
         ->join('master_akuns', 'pengajuan_surats.id', '=', 'master_akuns.id')
@@ -133,8 +132,7 @@ class PengajuanController extends Controller
         ], 200);
     }
 
-
-public function statusproses(Request $request){
+    public function statusproses(Request $request){
     $user = $request->user();
     $id_masyarakat = $user->id_masyarakat;
 
@@ -159,10 +157,9 @@ public function statusproses(Request $request){
         'message' => 'success',
         'data' => $pengajuan_surats
     ], 200);
-}
+    }
 
-
-public function statusdiajukan(Request $request){
+    public function statusdiajukan(Request $request){
     $user = $request->user();
     $id_masyarakat = $user->id_masyarakat;
 
@@ -187,12 +184,13 @@ public function statusdiajukan(Request $request){
         'message' => 'success',
         'data' => $pengajuan_surats
     ], 200);
-}
-public function statusselesai(Request $request){
+    }
+
+    public function statusselesai(Request $request){
     $user = $request->user();
     $id_masyarakat = $user->id_masyarakat;
 
-        $no_kk = master_kks::whereHas('masyarakat', function ($query) use ($id_masyarakat) {
+    $no_kk = master_kks::whereHas('masyarakat', function ($query) use ($id_masyarakat) {
             $query->where('id_masyarakat', $id_masyarakat);
         })->value('no_kk');
 
@@ -213,6 +211,45 @@ public function statusselesai(Request $request){
         'message' => 'success',
         'data' => $pengajuan_surats
     ], 200);
+    }
+
+    public function pembatalan(Request $request){
+    $request->validate([
+        'nik' => 'required',
+        'id_surat' => 'required',
+    ]);
+    $masyarakat = master_masyarakat::where('nik', $request->nik)->first();
+
+    if (!$masyarakat) {
+        return response()->json([
+            'message' => 'Nik tidak ditemukan',
+        ], 400);
+    }
+    $existingSurat = pengajuan_surat::where('id_surat', $request->id_surat)
+                                    ->where('id_masyarakat', $masyarakat->id_masyarakat)
+                                ->first(); 
+    if (!$existingSurat) {
+    return response()->json([
+        'message' => 'Surat tidak ditemukan',
+    ], 400);
+    }
+
+    // Update the status of the record
+    $pengajuan_surat = pengajuan_surat::where('id_surat', $request->id_surat)
+                                    ->where('id_masyarakat', $masyarakat->id_masyarakat)
+                                    ->where('status', 'Diajukan')
+                                    ->update(['status' => 'Pembatalan']);
+
+if ($pengajuan_surat) {
+    return response()->json([
+        'message' => 'Surat berhasil dibatalkan',
+    ], 200);
+} else {
+    return response()->json([
+        'message' => 'Tidak ada surat dengan status Diajukan yang dapat dibatalkan',
+    ], 400);
 }
+
+    }
 
 }

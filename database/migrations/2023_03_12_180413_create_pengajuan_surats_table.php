@@ -19,6 +19,7 @@ class CreatePengajuanSuratsTable extends Migration
             $table->string('status', 20)->nullable()->default('text');
             $table->text('keterangan')->nullable()->default('text');
             $table->dateTime('created_at', $precision = 0);
+            $table->string('file_pdf')->nullable()->default('');
             $table->uuid('id_masyarakat');
             $table->Foreign('id_masyarakat')->references('id_masyarakat')->on('master_masyarakats');
             $table->smallInteger('id_surat');
