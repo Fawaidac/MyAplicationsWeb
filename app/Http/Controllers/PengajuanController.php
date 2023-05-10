@@ -35,7 +35,7 @@ class PengajuanController extends Controller
     if (!$existingSurat) {
         $data = pengajuan_surat::create([
             'uuid' => Str::uuid(),
-            'status' => 'Disetujui RT',
+            'status' => 'Diajukan',
             'keterangan' => $request->keterangan,
             'id_surat' => $request->id_surat,
             'created_at' => $now,
@@ -60,7 +60,7 @@ class PengajuanController extends Controller
             $data = pengajuan_surat::create([
                 'uuid' => Str::uuid(),
                 'status' => $request->status,
-                'keterangan' => 'Disetujui RT',
+                'keterangan' => 'Diajukan',
                 'id_surat' => $request->id_surat,
                 'created_at' => $now,
                 'id_masyarakat' => $masyarakat->id_masyarakat,
