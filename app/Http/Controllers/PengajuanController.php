@@ -49,7 +49,7 @@ class PengajuanController extends Controller
     } else {
         $cek = pengajuan_surat::where('id_surat', $request->id_surat)
                                 ->where('id_masyarakat', $masyarakat->id_masyarakat)
-                                ->where('status', '<>', 'Selesai')
+                                ->whereIn('status', ['Selesai', 'Ditolak RT', 'Ditolak RW'], 'and', true)
                                 ->exists();
 
         if ($cek) {
@@ -74,6 +74,7 @@ class PengajuanController extends Controller
     }
     }
     public function suratmasuk(Request $request){
+        
         $rt = $request->input('rt'); // rt yang dipilih atau ditentukan
         $status = $request->input('status');
         $suratMasuk = pengajuan_surat::select('pengajuan_surats.*', 'master_surats.*', 'master_masyarakats.*')
@@ -149,7 +150,7 @@ class PengajuanController extends Controller
                             $query->where('pengajuan_surats.id_masyarakat', $id_masyarakat)
                             ->orWhere('master_kks.no_kk', '=', $no_kk);
                         })
-                        ->whereNotIn('pengajuan_surats.status', ['Selesai', 'Diajukan'])
+                        ->whereNotIn('pengajuan_surats.status', ['Selesai', 'Diajukan', 'Dibatalkan', 'Ditolak RT', 'Ditolak RW'])
                         ->select('pengajuan_surats.*', 'master_masyarakats.*', 'master_surats.*')
                         ->get();
 
@@ -162,6 +163,7 @@ class PengajuanController extends Controller
     public function statusdiajukan(Request $request){
     $user = $request->user();
     $id_masyarakat = $user->id_masyarakat;
+    $status = $request->status;
 
         $no_kk = master_kks::whereHas('masyarakat', function ($query) use ($id_masyarakat) {
             $query->where('id_masyarakat', $id_masyarakat);
@@ -176,7 +178,7 @@ class PengajuanController extends Controller
                             $query->where('pengajuan_surats.id_masyarakat', $id_masyarakat)
                             ->orWhere('master_kks.no_kk', '=', $no_kk);
                         })
-                        ->where('pengajuan_surats.status', 'Diajukan')
+                        ->where('pengajuan_surats.status',  $status)
                         ->select('pengajuan_surats.*', 'master_masyarakats.*', 'master_surats.*')
                         ->get();
 
@@ -186,9 +188,10 @@ class PengajuanController extends Controller
     ], 200);
     }
 
-    public function statusselesai(Request $request){
+    public function statusditolak(Request $request){
     $user = $request->user();
     $id_masyarakat = $user->id_masyarakat;
+
 
     $no_kk = master_kks::whereHas('masyarakat', function ($query) use ($id_masyarakat) {
             $query->where('id_masyarakat', $id_masyarakat);
@@ -203,7 +206,7 @@ class PengajuanController extends Controller
                             $query->where('pengajuan_surats.id_masyarakat', $id_masyarakat)
                             ->orWhere('master_kks.no_kk', '=', $no_kk);
                         })
-                        ->where('pengajuan_surats.status', 'Selesai')
+                        ->whereIn('pengajuan_surats.status', ['Ditolak RT', 'Ditolak RW'])
                         ->select('pengajuan_surats.*', 'master_masyarakats.*', 'master_surats.*')
                         ->get();
 
@@ -238,7 +241,7 @@ class PengajuanController extends Controller
     $pengajuan_surat = pengajuan_surat::where('id_surat', $request->id_surat)
                                     ->where('id_masyarakat', $masyarakat->id_masyarakat)
                                     ->where('status', 'Diajukan')
-                                    ->update(['status' => 'Pembatalan']);
+                                    ->update(['status' => 'Dibatalkan']);
 
 if ($pengajuan_surat) {
     return response()->json([

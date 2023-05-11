@@ -21,7 +21,6 @@ Route::post('auth/register', [AuthController::class, 'register']);
 Route::post('auth/login', [AuthController::class, 'login']);
 Route::get('berita', [BeritaController::class, 'berita']);
 Route::get('surat', [SuratController::class, 'surat']);
-Route::post('suratmasuk', [PengajuanController::class, 'suratmasuk']);
 Route::post('rekap', [PengajuanController::class, 'rekap']);
 Route::post('statussurat', [PengajuanController::class, 'statussurat']);
 Route::post('pengajuan', [PengajuanController::class, 'pengajuan']);
@@ -31,8 +30,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('auth/me', [AuthController::class, 'me']);
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('keluarga', [AuthController::class, 'keluarga']);
-    Route::get('statusdiajukan', [PengajuanController::class, 'statusdiajukan']);
+    Route::post('statusdiajukan', [PengajuanController::class, 'statusdiajukan']);
     Route::get('statusproses', [PengajuanController::class, 'statusproses']);
     Route::get('statusselesai', [PengajuanController::class, 'statusselesai']);
     Route::post('editnohp', [AuthController::class, 'editnohp']);
+    Route::post('suratmasuk', [PengajuanController::class, 'suratmasuk']);
 }); 
+    
